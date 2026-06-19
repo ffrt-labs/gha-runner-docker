@@ -1,0 +1,15 @@
+services:
+  runner:
+    build:
+      context: .
+      network: host
+    image: github-runner
+    init: true
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      RUNNER_NAME: ${RUNNER_NAME:-docker-runner}
+      RUNNER_LABELS: ${RUNNER_LABELS:-self-hosted,linux,x64}
+    entrypoint: ["./entrypoint.sh"]
+    restart: unless-stopped
