@@ -13,3 +13,10 @@ services:
       RUNNER_LABELS: ${RUNNER_LABELS:-self-hosted,linux,x64}
     entrypoint: ["./entrypoint.sh"]
     restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - /usr/libexec/docker/cli-plugins:/usr/local/lib/docker/cli-plugins
+      - /actions-runner/_work:/actions-runner/_work
+    group_add:
+        - "989"
