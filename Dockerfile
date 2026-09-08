@@ -24,7 +24,13 @@ RUN curl -o sbx.tar.gz -L https://github.com/docker/sbx-releases/releases/downlo
 	&& PREFIX=/usr/local ./docker-sbx/install.sh \
 	&& rm -rf sbx.tar.gz docker-sbx
 
-RUN useradd -m runner
+# ubuntu:24.04 ships a built-in "ubuntu" user/group at uid/gid 1000, unlike
+# 22.04 -- left alone, useradd below would land runner on 1001 instead. The
+# host's bind-mounted /actions-runner/_work is owned by the host's uid 1000,
+# so runner must land on 1000 too, or every job's "Set up job" step fails
+# writing to _work with a permission error. Confirmed live.
+RUN userdel -r ubuntu
+RUN groupadd -g 1000 runner && useradd -m -u 1000 -g 1000 runner
 
 WORKDIR /actions-runner
 
