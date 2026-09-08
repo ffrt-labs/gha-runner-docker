@@ -18,5 +18,13 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /usr/libexec/docker/cli-plugins:/usr/local/lib/docker/cli-plugins
       - /actions-runner/_work:/actions-runner/_work
+    # sbx's sandbox backend ("nerdbox") runs each sandbox as a KVM-backed
+    # microVM, not a plain container — without /dev/kvm and /dev/net/tun it
+    # fails during backend init (containerd plugin errors that look unrelated
+    # to virtualization at first glance).
+    devices:
+      - /dev/kvm
+      - /dev/net/tun
     group_add:
-        - "989"
+        - "989"  # docker
+        - "993"  # kvm
