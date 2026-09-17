@@ -24,6 +24,11 @@ RUN curl -o sbx.tar.gz -L https://github.com/docker/sbx-releases/releases/downlo
 	&& PREFIX=/usr/local ./docker-sbx/install.sh \
 	&& rm -rf sbx.tar.gz docker-sbx
 
+# Node.js: pinned to a specific upstream LTS release, installed from the official static tarball
+RUN curl -o node.tar.gz -L https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.gz \
+	&& tar xzf node.tar.gz -C /usr/local --strip-components=1 \
+	&& rm node.tar.gz
+
 # ubuntu:24.04 ships a built-in "ubuntu" user/group at uid/gid 1000, unlike
 # 22.04 -- left alone, useradd below would land runner on 1001 instead. The
 # host's bind-mounted /actions-runner/_work is owned by the host's uid 1000,
