@@ -18,15 +18,25 @@ if [ -z "$GITHUB_TOKEN" ]; then
 	echo "❌ GITHUB_TOKEN is not set in your .env file"
 	exit 1
 fi
-if [ -z "$GITHUB_ORG" ]; then
-	echo "❌ GITHUB_ORG is not set in your .env file"
+# Register to an org (GITHUB_ORG) or to a single repo (GITHUB_REPO=owner/repo),
+# never both: a runner belongs to exactly one of them.
+if [ -n "$GITHUB_ORG" ] && [ -n "$GITHUB_REPO" ]; then
+	echo "❌ Both GITHUB_ORG and GITHUB_REPO are set in your .env file, set only one"
+	exit 1
+fi
+if [ -n "$GITHUB_REPO" ]; then
+	RUNNER_URL="https://github.com/$GITHUB_REPO"
+	TOKEN_URL="https://api.github.com/repos/${GITHUB_REPO}/actions/runners/registration-token"
+elif [ -n "$GITHUB_ORG" ]; then
+	RUNNER_URL="https://github.com/$GITHUB_ORG"
+	TOKEN_URL="https://api.github.com/orgs/${GITHUB_ORG}/actions/runners/registration-token"
+else
+	echo "❌ Neither GITHUB_ORG nor GITHUB_REPO is set in your .env file"
 	exit 1
 fi
 
 RUNNER_NAME="${RUNNER_NAME:-docker-runner}"
 RUNNER_LABELS="${RUNNER_LABELS:-self-hosted,linux,x64}"
-
-RUNNER_URL="https://github.com/$GITHUB_ORG"
 
 if [ -f ./.runner ]; then
 	echo "✅ Runner already registered (.runner found), skipping config.sh"
@@ -34,11 +44,11 @@ else
 	REG_TOKEN=$(curl -s -X POST \
 		-H "Authorization: Bearer $GITHUB_TOKEN" \
 		-H "Accept: application/vnd.github+json" \
-		"https://api.github.com/orgs/${GITHUB_ORG}/actions/runners/registration-token" \
+		"$TOKEN_URL" \
 		| jq -r '.token')
 
 	if [ -z "$REG_TOKEN" ] || [ "$REG_TOKEN" == "null" ]; then
-	     echo "❌ Could not get token. Check your GITHUB_TOKEN and REPO_URL."
+	     echo "❌ Could not get token. Check your GITHUB_TOKEN and GITHUB_ORG/GITHUB_REPO."
 	exit 1
 	fi
 
@@ -58,7 +68,7 @@ cleanup() {
 		REG_TOKEN=$(curl -s -X POST \
 			-H "Authorization: Bearer $GITHUB_TOKEN" \
 			-H "Accept: application/vnd.github+json" \
-			"https://api.github.com/orgs/${GITHUB_ORG}/actions/runners/registration-token" \
+			"$TOKEN_URL" \
 			| jq -r '.token')
 	fi
 	if [ -z "$REG_TOKEN" ] || [ "$REG_TOKEN" == "null" ]; then

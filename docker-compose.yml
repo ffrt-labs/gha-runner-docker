@@ -6,7 +6,7 @@ services:
     image: github-runner
     init: true
     env_file:
-      - path: .env
+      - path: ${ENV_FILE:-.env}
         required: true
     environment:
       RUNNER_NAME: ${RUNNER_NAME:-docker-runner}
@@ -17,7 +17,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
       - /usr/libexec/docker/cli-plugins:/usr/local/lib/docker/cli-plugins
-      - /actions-runner/_work:/actions-runner/_work
+      - ${RUNNER_WORK_DIR:-/actions-runner/_work}:/actions-runner/_work
     # sbx's sandbox backend ("nerdbox") runs each sandbox as a KVM-backed
     # microVM, not a plain container — without /dev/kvm and /dev/net/tun it
     # fails during backend init (containerd plugin errors that look unrelated
