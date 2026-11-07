@@ -10,8 +10,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y curl tar ca-certificates tini jq e2fsprogs
 
-# git: pinned to the version available in the ubuntu:24.04 (noble) archive
-RUN apt-get install -y git=1:2.43.0-1ubuntu7.3
+# git: pinned to the version in the ubuntu:24.04 (noble) archive. Ubuntu drops
+# superseded revisions, so a security update breaks this pin: bump it to the
+# current noble-updates version when the build fails here.
+RUN apt-get install -y git=1:2.43.0-1ubuntu7.4
 
 # gh: pinned to a specific upstream release, installed from the official .deb
 RUN curl -o gh.deb -L https://github.com/cli/cli/releases/download/v2.98.0/gh_2.98.0_linux_amd64.deb \
